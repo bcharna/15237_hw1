@@ -14,7 +14,7 @@ window.addEventListener('resize', sizeCanvas);
 var jumpSheepId;
 
 var cloudIntId;
-
+var startYPos; // to hold y position of sheep before jumping
 var game = new Object();
 	game.level = 0;
 	game.over = false;
@@ -37,7 +37,29 @@ var sheep = new Object();
 	sheep.image = 1;
 	sheep.hit = false;
 	
+var thisScreen = "splash";
+
 	
+function reloadGame() {
+  game.level = 0;
+	game.over = false;
+	game.timerDelay = 100;
+	game.timer = 1000;
+	game.goal = 10;
+	game.fencesJumped = 0;
+	game.timeColor = 'rgb(30, 96, 117)';
+	game.grassx = 0;
+	game.speed = 1;
+	game.fences = {lane0:[],lane1:[],lane2:[]};
+	
+	sheep.onGround = true;
+	sheep.image = 1;
+	sheep.hit = false;
+	sheep.lane = 1; // put back in center
+  sheepSizePosition();
+	ctx.textAlign = 'start';
+	
+}
   // Cloud module
 var CLOUD = (function () {
 	var exports = {};
@@ -209,9 +231,22 @@ function sizeCanvas(){
 	}
   else {ctx.canvas.width  = 590}
   ctx.canvas.height = Math.round(ctx.canvas.width*.75);
-  sheepSizePosition();	
-  fenceSizePosition();
-  redrawAll();
+  if (thisScreen === "game")
+  {
+    sheepSizePosition();	
+    fenceSizePosition();
+    redrawAll();
+  }
+  else if (thisScreen === "instructions")
+  {
+    showInstructionsScreen();
+  }
+  else if (thisScreen === "splash")
+  {
+    showSplashScreen();
+    
+  }
+  
 }
 
 //////////// fences
@@ -356,7 +391,7 @@ function jumpSheep(startYPos, jumpSpeed, acceleration){
 }
 
 function jumpAnim(){
-	var startYPos = sheep.yPos;
+	startYPos = sheep.yPos;
   sheep.onGround = false;
   var acceleration = -(sheep.curHeight/100);
   var jumpSpeed = Math.round(sheep.curHeight/5);
@@ -389,15 +424,16 @@ function onKeyDown(event){
         sheepSizePosition();
       }
     }
-    if(event.keyCode === pCode){
+    if(event.keyCode === pCode && game.over === false){
       if (window.startGame) pauseGame();
       else{ unPauseGame();}
     }
     
     if(event.keyCode === rCode && game.over === true){
-      location.reload(); // reload the page
+      // location.reload(); // reload the page
+      reloadGame();
+      unPauseGame();
     }
-    
 }
 
 
@@ -483,22 +519,22 @@ function drawGrass(){
 function drawFence(fence) {
   var dx = canvas.width - fence.xPos;
   if (fence.lane === 0){
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.15,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.15,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
-  	else{ctx.drawImage(spriteSheet,2259, 130, 198, 260, dx, fence.yPos,
+  	else{ctx.drawImage(spriteSheet,2265, 133, 199, 260, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
   else if (fence.lane === 1){
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.12,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.12,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
-    else{ctx.drawImage(spriteSheet,2302, 697, 198, 260, dx, fence.yPos,
+    else{ctx.drawImage(spriteSheet,2308, 699, 199, 261, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
   else{
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.1,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.1,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
     else{
-  	ctx.drawImage(spriteSheet,2312, 1008, 198, 260, dx, fence.yPos,
+  	ctx.drawImage(spriteSheet,2318, 1010, 199, 261, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
 }
@@ -654,6 +690,7 @@ function startClouds() {
   cloudIntId = setInterval(advanceClouds, game.timerDelay);
   
 }
+
 function run() {
     canvas.addEventListener('keydown', onKeyDown, false);
     // make canvas focusable, then give it focus!
@@ -665,10 +702,81 @@ function run() {
     startClouds();
 }
 
+<<<<<<< HEAD
 
 startAnim();
 spriteSheet.onload = function () { // let's start the game once the sprite is loaded
   startAnim();
+=======
+var splash = new Image();
+splash.src = "splash1.png";
+
+canvas.addEventListener("mousedown", actOnClick, false);
+
+function actOnClick(event) {
+  
+  var pos = getPosition(event)
+  //if user clicks on left half, start game.
+  
+  if (thisScreen === "splash")
+  {
+    if (pos.x < Math.round(canvas.width / 2))
+    {
+      thisScreen = "game";
+      startAnim();
+    }
+    else // show instructions
+    {
+      thisScreen = "instructions";
+      showInstructionsScreen();
+    }
+  }
+  else if (thisScreen === "instructions")
+  {
+    if (pos.y > Math.round(canvas.height * .5))
+    {
+      thisScreen = "game";
+      startAnim();
+    }
+    
+  }
+
+}
+function getPosition(event)
+{
+  var x = event.x;
+  var y = event.y;
+
+  x -= canvas.offsetLeft;
+  y -= canvas.offsetTop;
+  
+  return {x: x, y: y};
+}
+
+function showInstructionsScreen()
+{
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(splash, 0, 0, canvas.width, canvas.height);
+  
+  var fontSize = canvas.width*.07
+	ctx.font = fontSize+"px Impact";
+	ctx.fillStyle = 'green';
+	ctx.textAlign = 'center';
+  
+	ctx.fillText("Instructions here. Click here to play", canvas.width*.5, canvas.height*.75);
+	ctx.textAlign = 'start';
+  
+}
+
+function showSplashScreen() {
+  ctx.drawImage(splash, 0, 0, canvas.width, canvas.height);
+  
+}
+
+splash.onload = function () { // let's start the game once the sprite is loaded
+  sizeCanvas();
+  showSplashScreen();
+>>>>>>> 2107b7d3c627239f0903b43658d1db1a6090efff
 }
 
 sheepAnimateId = setInterval(animateSheep, game.timerDelay);

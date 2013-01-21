@@ -24,11 +24,11 @@ var drawScreenId = [];
 var cloudIntId;
 
 var init = function(){
-    game = new Object();
+    game = new Object();  // game properties
     game.level = 0;
     game.over = false;
     game.timerDelay = 100;
-    game.timer = 600;
+    game.timer = 600;  // start with a minute
     game.goal = 10;
     game.fencesJumped = 0;
     game.timeColor = 'rgb(157, 188, 196)';
@@ -41,7 +41,7 @@ var init = function(){
     game.levelup = false;
     game.paused = false;
 
-    sheep = new Object();
+    sheep = new Object();  //sheep properties
   	sheep.xPos = 0;
   	sheep.lane = 1;
   	sheep.onGround = true;
@@ -61,17 +61,17 @@ grass.src = "grass.png"
 
 
 ////////////////////////////////////////////////
-//        Canvas Resize (set ratio)           //
+//        Canvas Resize                       //
 ////////////////////////////////////////////////
 
 
-function sizeCanvas(){
+function sizeCanvas(){       // canvas can be resized at any point in game
   var curWidth = window.innerWidth
   if (curWidth > 640){
     ctx.canvas.width  = window.innerWidth-50;
   }
   else {ctx.canvas.width  = 590}
-  ctx.canvas.height = Math.round(ctx.canvas.width*.75);
+  ctx.canvas.height = Math.round(ctx.canvas.width*.75); //sets ratio
   sheepSizePosition();	
   fenceSizePosition();
   redrawAll();
@@ -86,13 +86,13 @@ function sizeCanvas(){
 
 var CLOUD = (function () {
   var exports = {};
-  exports.clouds = Array();
-  function drawCloud(cloud){
+  exports.clouds = Array();    //initialize array for clouds
+  function drawCloud(cloud){   
     var sx;
     var sy;
     var sWidth;
     var sHeight;
-    if (cloud.image === 0){
+    if (cloud.image === 0){  // get sprite sheet dimensions for clouds
       sx = 80;
       sy = 565;
       sWidth = 243;
@@ -196,7 +196,7 @@ function startClouds() {
 }
 
 
-function origClouds(x, y){ //cloud placed before they start generating
+function origClouds(x, y){   //clouds placed on screen before they start generating
   ctx.drawImage(spriteSheet,81, 545, 1100, 193, x, canvas.height*.05,
                               canvas.width, canvas.height*.3);
   if (window.startGame == true){
@@ -217,7 +217,7 @@ function generateNewFence(){ //randomly generate either 1 or 2 fences
   var lane = Math.floor((Math.random()*3));
   var numberOfFences = Math.floor((Math.random()*4));
   if (numberOfFences > 1){
-    if (game.level > 3){
+    if (game.level > 3){  //2 fences at a time if level 5 or above
       numberOfFences = Math.ceil((Math.random()*2));
     }
     else{
@@ -237,7 +237,7 @@ function generateNewFence(){ //randomly generate either 1 or 2 fences
     fence.hit = false;
     switch (fence.lane){
       case 0:
-        fence.yPos = Math.round(canvas.height * .75); 
+        fence.yPos = Math.round(canvas.height * .75);   //size the fences in each lane
         fence.curWidth = Math.round(canvas.width * .1);
         fence.curHeight = Math.round(canvas.width * .18);
         game.fences.lane0.push(fence);
@@ -259,7 +259,7 @@ function generateNewFence(){ //randomly generate either 1 or 2 fences
 }
 
 function fenceSizePosition(){
-  laneFenceSizePosition(game.fences.lane0);
+  laneFenceSizePosition(game.fences.lane0); 
   laneFenceSizePosition(game.fences.lane1);
   laneFenceSizePosition(game.fences.lane2);
 }
@@ -327,7 +327,7 @@ var moveFencesInLane = function (laneFences){
 
 function drawFence(fence) {
   var dx = fence.xPos;
-  if (fence.lane === 0){
+  if (fence.lane === 0){ //if hit, draw alternative sprite, else, normal
   	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.15,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
   	else{ctx.drawImage(spriteSheet,2259, 130, 198, 260, dx, fence.yPos,
@@ -364,7 +364,7 @@ function drawFencesInLane(lane) {
   }
 }
 
-
+// generate random fences and advance those displayed
 function fenceFactory(){
     generateNewFenceId = setInterval(generateNewFence, game.fenceGenSpeed);
     advanceFenceId = setInterval(function(){advanceFences(moveFencesInLane);}, 10);
@@ -378,11 +378,11 @@ function fenceFactory(){
 
 
 
-function sheepSizePosition(){
+function sheepSizePosition(){  
     if(!window.runAnimation){
       sheep.xPos = Math.round(ctx.canvas.width*.2);
     }
-  	switch (sheep.lane){
+  	switch (sheep.lane){  //different dimensions for different lanes
     case 0:
         sheep.curWidth = Math.round(ctx.canvas.width*.21);
         sheep.curHeight = sheep.curWidth*.75;
@@ -412,8 +412,6 @@ function drawSheep(x,y){
   	var height = sheep.curHeight;
 	if (!sheep.onGround){
 		ctx.drawImage(spriteSheet,1594,75,530,348, x, y, width, height);}
-	//else if (!sheep.onGround && sheepTouchingFence(fence)){
-	//ctx.drawImage(spriteSheet, 1595, 460, 530, 348, x, y, width);}
 	else if (sheep.image === 1){
 		ctx.drawImage(spriteSheet,1011,72,504,350, x, y, width, height);}
 	else if (sheep.image === 2){
@@ -425,7 +423,7 @@ function drawSheep(x,y){
 
 
 function reDrawSheep(x,y){
-	if (y === undefined) y = 0;
+	if (y === undefined) y = 0;  //for start animation, move sheep forward
 	sheep.xPos += x;
 	sheep.yPos += y;
   redrawAll();
@@ -433,16 +431,16 @@ function reDrawSheep(x,y){
 
 
 var jumpSheep = function(startYPos, jumpSpeed, acceleration){
-  sheep.jumpSpeed = jumpSpeed;
-  sheep.acceleration = acceleration;
-  if (!sheep.onGround){
+  sheep.jumpSpeed = jumpSpeed;         
+  sheep.acceleration = acceleration;            // jump with physics to make
+  if (!sheep.onGround){                         // more realistic
     if (sheep.yPos - jumpSpeed >= startYPos){
         sheep.yPos = startYPos;
  		sheep.onGround = true;
  		redrawAll();
     }
     else{
-      sheep.yPos -= jumpSpeed;
+      sheep.yPos -= jumpSpeed;           
       sheep.yRelToCanvas = (sheep.yPos/canvas.height);
       jumpSpeed += acceleration;
       jumpSheepId = setTimeout(function()
@@ -455,17 +453,17 @@ function jumpAnim(funct){
 	var startYPos = sheep.yPos;
   sheep.startYPosRelToCanvas = startYPos/canvas.height;
   sheep.onGround = false;
-  var acceleration = -(sheep.curHeight/100);
+  var acceleration = -(sheep.curHeight/100); //dependent on lane
   var jumpSpeed = Math.round(sheep.curHeight/5);
   funct(startYPos,jumpSpeed,acceleration);
 }
 
 function animateSheep(){
-    if (sheep.image === 1){sheep.image = 2;}
+    if (sheep.image === 1){sheep.image = 2;}  // alternate between sprites to run
     else {sheep.image = 1;} 
 }
 
-function sheepTouchingFence(fence){
+function sheepTouchingFence(fence){  
   var fenceX = fence.xPos;
   var fenceY = fence.yPos;
   var fenceWidth = fence.curWidth;
@@ -489,12 +487,12 @@ function sheepTouchingFence(fence){
 
 
 function onKeyDown(event){
-    var spaceBarCode = 32;
-    var upCode = 38;
-    var downCode = 40;
-    var pCode = 80;
-    var rCode = 82;
-    var hCode = 72;
+    var spaceBarCode = 32; //jump
+    var upCode = 38;  //change lanes
+    var downCode = 40; //change lanes
+    var pCode = 80;  //pause/unpause
+    var rCode = 82;  //restart
+    var hCode = 72;  //hover
     if ((sheep.onGround || sheep.hover) && window.startGame){
       if (sheep.onGround && event.keyCode === spaceBarCode){jumpAnim(jumpSheep);}
 
@@ -520,9 +518,9 @@ function onKeyDown(event){
         }
       }
     }
-    if(event.keyCode === pCode){
+    if(event.keyCode === pCode){  
       if(!game.over){
-      	if (window.startGame) pauseGame();
+      	if (window.startGame) {pauseGame();}
       	else{unPauseGame();}
       }
     }
@@ -531,21 +529,21 @@ function onKeyDown(event){
     }    
 }
 
-function changeGoal(){
+function changeGoal(){  //If new level is reached, must reset goal to 10
     game.goal--;
     if (game.goal==0){
         game.goal=10;
         game.level++;
-        if(game.fenceGenSpeed > 300){
-          game.fenceGenSpeed +=  -150;}
-          game.speed+=.1;
+        if(game.fenceGenSpeed > 300){  // set minimmum fence generation speed
+          game.fenceGenSpeed +=  -150;} // increase fences with new levels
+          game.speed+=.1;  // increase game speed
           game.levelup= true;
-          setTimeout(function(){game.levelup = false}, 2000)
+          setTimeout(function(){game.levelup = false}, 2000) //display level for 2 sec
     }
 }
 
-function drawPause(){
-  if (!game.over && game.paused){
+function drawPause(){    //pause dialog
+  if (!game.over && game.paused){  
     ctx.drawImage(spriteSheet, 768, 859, 550, 308, canvas.width*.335, canvas.height*.33,
                                                    canvas.width*.35, canvas.height*.2);
     var fontSize = canvas.width*.065;
@@ -561,8 +559,8 @@ function pauseGame(){
   if (jumpSheepId !== undefined){
     window.clearTimeout(jumpSheepId);
   }
-  window.clearInterval(generateNewFenceId);
-  window.clearInterval(advanceFenceId);
+  window.clearInterval(generateNewFenceId);  //stop everythingin place!
+  window.clearInterval(advanceFenceId);      //resize still possible
   window.clearInterval(onTimerId);
   window.clearInterval(makeCloudId);
   window.clearInterval(cloudIntId);
@@ -570,7 +568,7 @@ function pauseGame(){
   drawPause();
 }
 
-function unPauseGame(){
+function unPauseGame(){    // restart everything from where it was
   window.startGame = true;
   game.paused = false;
   if(!sheep.onGround && !sheep.hover){
@@ -592,29 +590,29 @@ function unPauseGame(){
 ////////////////////////////////////////
 
 
-function fencesJumped(fences){
+function fencesJumped(fences){     //keep track in moon
 	var fontSize = canvas.width*.06
 	ctx.font = fontSize+"px Impact";
 	ctx.fillStyle = 'rgb(255, 236, 134)'
 	ctx.fillText(""+fences, canvas.width*.51, canvas.height*.174);
 }
 
-function calcTime(time){
+function calcTime(time){    //timer to seconds
 	if (time < 0) {return 0;}
 	else {
 		return Math.round(time/10);
 	}
 }
 
-function timeLeft(time, color){
+function timeLeft(time, color){    // keep track of time left
 	var fontSize = canvas.width*.06;
 	ctx.font = fontSize+"px Impact";
 	ctx.fillStyle = color;
 	ctx.fillText("Time Left : "+calcTime(time), .64*canvas.width, canvas.height/6.4);
 }
 
-function fenceGoal(goal){
-  for (var i = 0; i < goal; i++){
+function fenceGoal(goal){         //draw mini fences in top left to 
+  for (var i = 0; i < goal; i++){    //show how many left until next level
     j = (canvas.width/25)*i;
     ctx.drawImage(spriteSheet,2562, 155, 255, 208, 
                                .02*canvas.width+j, canvas.height*.1,
@@ -625,10 +623,9 @@ function fenceGoal(goal){
 function drawMoon(canvas){
 	ctx.drawImage(spriteSheet,0,0,300,350,canvas.width*.44, canvas.height*.05,
 		                                  canvas.width*.13,canvas.height*.2);
-
 }
 
-function drawGrass(){
+function drawGrass(){   //make grass move, stitch two grass images together
 	if (game.grassx < -canvas.width) {game.grassx = 0;}
 	ctx.drawImage(grass, game.grassx, 0, canvas.width, canvas.height);
 	ctx.drawImage(grass, game.grassx+canvas.width, 0, canvas.width, canvas.height);
@@ -650,9 +647,9 @@ function gameOverMessage() {
 
 
 
-function reset(){ 
-  init();
-  window.runAnimation = true;
+function reset(){ //called when game over
+  init();    // reinitialize variables
+  window.runAnimation = true; 
   window.startGame = false;
   sheepAnimateId = setInterval(animateSheep, game.timerDelay);
 	startAnim();
@@ -664,7 +661,7 @@ function startAnim(){
   window.runAnimation = true;
   window.addEventListener('resize', sizeCanvas);
   sizeCanvas();
-  reDrawSheep(5);
+  reDrawSheep(5);  
   if (sheep.xPos < Math.round(ctx.canvas.width*.2)){
     setTimeout(startAnim, 40);
     game.levelup = true;
@@ -687,12 +684,12 @@ function redrawAll() {
     CLOUD.drawClouds();
     fencesJumped(game.fencesJumped, canvas, ctx);
     timeLeft(game.timer, game.timeColor, canvas, ctx);
-    game.timeColor = 'rgb(157, 188, 196)';
-    if (game.timer <= 100){game.timeColor = 'rgb(222, 110, 91)';}
+    game.timeColor = 'rgb(157, 188, 196)'; //set back to blue (for flash of red/green)
+    if (game.timer <= 100){game.timeColor = 'rgb(222, 110, 91)';} // red if <10 sec
     fenceGoal(game.goal, canvas, ctx);
     drawMoon(canvas, ctx);
     drawGrass();
-    if (game.levelup){
+    if (game.levelup){        // display level 
       ctx.drawImage(spriteSheet, 768, 859, 550, 308, 
                     canvas.width*.335, canvas.height*.33,
                     canvas.width*.35, canvas.height*.2);
@@ -701,7 +698,7 @@ function redrawAll() {
       ctx.fillStyle = 'rgb(18, 16, 41)';
       ctx.fillText("Level "+(game.level+1), .42*canvas.width, canvas.height*.46);
     }
-    if (!game.over && game.paused){
+    if (!game.over && game.paused){ //pause dialog
       ctx.drawImage(spriteSheet, 768, 859, 550, 308, 
                     canvas.width*.335, canvas.height*.33,
                     canvas.width*.35, canvas.height*.2);
@@ -711,8 +708,8 @@ function redrawAll() {
       ctx.fillText("Paused", .41*canvas.width, canvas.height*.46);
   }
 
-    if (sheep.lane === 0){
-      drawFencesInLane(2);
+    if (sheep.lane === 0){    //draw sheep in front of or behind fences
+      drawFencesInLane(2);    //depending on what lane he is in
       drawFencesInLane(1);
       drawFencesInLane(0);
       drawSheep(sheep.xPos,sheep.yPos);
@@ -774,19 +771,17 @@ function startGameAnimation(event){
   startAnim();
 }
 
-var drawScreen = function(glowPics){
+var drawScreen = function(glowPics){    // cycle through splashscreens to animate
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(spriteSheet,191, glowPics[window.splashScreenSprite], 
                 1067, 727, 0, 0,canvas.width,canvas.height);
   window.splashScreenSprite = ((window.splashScreenSprite+1)%8);
-  var fontSize = canvas.width*.03;
-  ctx.font = fontSize+"px Impact";
-  ctx.fillStyle = 'rgba(255, 255, 255, .1)';
-  ctx.fillText("Press any key to start!", .37*canvas.width, canvas.height*.93);
+  ctx.drawImage(spriteSheet,1518, 1287, 517, 183, .4*canvas.width, .85*canvas.height,
+                                                  .2*canvas.width, .1*canvas.height);
 }
 
 function sizeSplashScreen(){
-  var glowPics = [3432,1251,1978,2705,4159,2705,1978,1251]
+  var glowPics = [3432,1251,1978,2705,4159,2705,1978,1251] //indices from sprite sheet
   var curWidth = window.innerWidth
   if (curWidth > 640){
     canvas.width  = window.innerWidth-50;
@@ -798,8 +793,25 @@ function sizeSplashScreen(){
   drawScreenId = setInterval(function(){drawScreen(glowPics);},100);
 }
 
+function getPosition(event)
+{
+  var x = event.x;    //get mouse click
+  var y = event.y;
+  return {x: x, y: y};
+}
+
 function splashScreen(){
-    canvas.addEventListener('keydown',startGameAnimation);
+    var actOnClick = function(event){
+      var pos = getPosition(event);
+      console.log(pos.x, pos.y);
+      if ((pos.x >= canvas.height*.55) && (pos.x <= canvas.width*.62) &&  // within
+          (pos.y >= canvas.height*.85) && (pos.y <= canvas.height*.95)){  // button
+        canvas.removeEventListener('mousedown', actOnClick); //end mouse click
+        startGameAnimation(); //begin game
+      }
+    }
+    //canvas.addEventListener('keydown',startGameAnimation);
+    canvas.addEventListener('mousedown', actOnClick, false);
     window.addEventListener('resize', sizeSplashScreen);
     sizeSplashScreen();
     canvas.setAttribute('tabindex','0');
