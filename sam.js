@@ -93,7 +93,7 @@ function reDrawSheep(x,y,width,height){
     if (height === undefined) height = sheep.curHeight;
 	sheep.xPos += x;
 	sheep.yPos += y;
-	redrawAll();
+	redrawAll(canvas,ctx);
 	drawSheep(sheep.xPos,sheep.yPos,width,height);
 }
 
@@ -190,7 +190,9 @@ function animateSheep(sheepImage){
 
 function redrawAll(canvas, ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height)
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    
+    // ctx.drawImage(background, 0, 0, 800, 300);
     fencesJumped(fences, canvas, ctx);
     timeLeft(time, canvas, ctx);
     fenceGoal(goal, canvas, ctx);

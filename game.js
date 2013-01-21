@@ -18,6 +18,34 @@ sheep.image = 1;
 window.startGame=false;
 
 
+// Fence factory
+
+var fenceFactory = (function () {
+	var exports = {};
+		
+	
+	exports.newRandomFence = function () {
+	  var lane = Math.floor((Math.random()*3));
+	  
+	  //create fence
+	  var fence = new Object();
+    fence.xPos = 0;
+    fence.lane = lane;
+    fence.hit = false;
+    
+    return fence;    
+	};
+	
+	return exports;
+}());
+
+var laneFences0 = Array();
+var laneFences1 = Array();
+var laneFences2 = Array();
+
+
+
+
 // Load Images
 
 spriteSheet = new Image();
@@ -42,7 +70,7 @@ function sizeCanvas(){
   else {ctx.canvas.width  = 590}
   ctx.canvas.height = Math.round(ctx.canvas.width*.75);
 	sheepSizePosition();
-
+	
 }
 
 function sheepSizePosition(){
@@ -97,7 +125,112 @@ function reDrawSheep(x,y){
 }
 
 
+// return true if fence is touching sheep
+function sheepTouchingFence(fence)
+{
+  var fenceX = canvas.width - fence.xPos;
+  var fenceY;
+  
+  var fenceWidth;
+  var fenceHeight;
+  
+  
+  if (fence.lane === 0)
+  {
+    fenceY = Math.round(canvas.height * .80);
+    fenceWidth = Math.round(canvas.width * .18);
+    fenceHeight = Math.round(canvas.height * .18);
+  }
+  else if (fence.lane === 1)
+  {
+    fenceY = Math.round(canvas.height * .725);
+    fenceWidth = Math.round(canvas.width * .13);
+    fenceHeight = Math.round(canvas.height * .13);
+    
+    
+  }
+  else
+  {
+    fenceY = Math.round(canvas.height * .72);
+    fenceWidth = Math.round(canvas.width * .06);
+    fenceHeight = Math.round(canvas.height * .06);
+  }
+  
+  
+  var sheepWidth = sheep.curWidth;
+  var sheepHeight = sheep.curHeight;
+  var sheepY = sheep.yPos;
+  var sheepX = sheep.xPos;
+  
+  //http://leetcode.com/2011/05/determine-if-two-rectangles-overlap.html
+  
+  var p1 = {x: sheepX,
+            y: sheepY};
+
+  var p2 = {x: sheepX + sheepWidth,
+            y: sheepY + sheepHeight};
+  var p3 = {x: fenceX,
+            y: fenceY};
+  var p4 = {x: fenceX + fenceWidth,
+            y: fenceY + fenceHeight};
+  
+  // var intersect = ((p2.y <= p3.y) && (p1.y >= p4.y) && (p2.x >= p3.x) && (p1.x <= p4.x));
+  
+  // TODO add hit attr to fence. if already hit, return false!!!
+  var intersect = ! ( p2.y < p3.y || p1.y > p4.y || p2.x < p3.x || p1.x > p4.x )
+  var inLane = (sheep.lane === fence.lane);
+  console.log(intersect && inLane);
+  
+  if (intersect && inLane)
+  {
+    if (!fence.hit)
+    {
+      fence.hit = true;
+      return true;
+    }
+  }
+  else return false;
+  // return  ;
+}
+
+
 // Animation functions
+function advanceFences() {
+  
+  var xDelta = Math.round(canvas.width/23);
+  for (var i = 0; i < laneFences0.length; i++)
+  {
+    laneFences0[i].xPos += xDelta;
+    if (sheepTouchingFence(laneFences0[i]))
+    {
+      time += 1000;
+    }
+    
+  }
+  
+  for (var i = 0; i < laneFences1.length; i++)
+  {
+    laneFences1[i].xPos += xDelta;
+    if (sheepTouchingFence(laneFences1[i]))
+    {
+      time += 1000;
+    }
+  }
+  
+  for (var i = 0; i < laneFences2.length; i++)
+  {
+    laneFences2[i].xPos += xDelta;
+    if (sheepTouchingFence(laneFences2[i]))
+    {
+      time += 1000;
+    }
+  }
+  
+  
+  
+  
+}
+
 
 function startAnim(){
   reDrawSheep(1);
@@ -106,6 +239,8 @@ function startAnim(){
   }
   else{
     window.startGame = true;
+    setInterval(generateFence, 2000);
+    setInterval(advanceFences, timerDelay);
   }
 }
 
@@ -193,7 +328,94 @@ function drawMoon(canvas, ctx){
 	ctx.drawImage(spriteSheet,0,0,300,350,canvas.width*.46,canvas.height*.05,
 		                                  canvas.width*.13,canvas.height*.2);
 
-}  
+}
+
+function drawFence(fence) {
+  var sx = 2259;
+  var sy = 130;
+  var sWidth = 198;
+  var sHeight = 260;
+  
+  var dx = canvas.width - fence.xPos;
+  var dy;
+  
+  var dWidth;
+  var dHeight;
+  
+  
+  if (fence.lane === 0)
+  {
+    dy = Math.round(canvas.height * .80);
+    dWidth = canvas.width * .18;
+    dHeight = canvas.height * .18;
+  }
+  else if (fence.lane === 1)
+  {
+    dy = Math.round(canvas.height * .725);
+    dWidth = canvas.width * .13;
+    dHeight = canvas.height * .13;
+    
+    
+  }
+  else
+  {
+    dy = Math.round(canvas.height * .72);
+    dWidth = canvas.width * .06;
+    dHeight = canvas.height * .06;
+    
+    
+  }
+  
+  
+  //TODO: change d width and height to depend on the lane.
+  // also change dx and dy to depend on canvas.width and canvas.height
+  
+  // ctx.drawImage(spriteSheet, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+  // console.log();
+  // console.log(dWidth == canvas.width * 13);
+  
+  ctx.drawImage(spriteSheet,sx, sy, sWidth, sHeight,canvas.width - fence.xPos,dy,
+		                                  dWidth,dHeight);
+	
+  
+}
+
+function drawFencesInLane(lane) {
+  
+  var laneFences;
+  if (lane === 0)
+    laneFences = laneFences0;
+  else if (lane === 1)
+    laneFences = laneFences1;
+  else
+    laneFences = laneFences2;
+    
+  for (var i = 0; i < laneFences.length; i++)
+  {
+    
+    drawFence(laneFences[i]);
+  }
+  
+  
+  
+  
+}
+
+function generateFence() {
+  
+  var thisFence = fenceFactory.newRandomFence();
+  
+  // console.log(thisFence.lane);
+  if (thisFence.lane === 0)
+    laneFences0.push(thisFence);
+  else if (thisFence.lane === 1)
+    laneFences1.push(thisFence);
+  else
+    laneFences2.push(thisFence);
+    
+    
+    
+}
 
 function redrawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -202,12 +424,39 @@ function redrawAll() {
     timeLeft(time, canvas, ctx);
     fenceGoal(goal, canvas, ctx);
     drawMoon(canvas, ctx);
-    drawSheep(sheep.xPos,sheep.yPos);
+    
+    if (sheep.lane === 0)
+    {
+      drawFencesInLane(0);
+      drawFencesInLane(1);
+      drawFencesInLane(2);
+      drawSheep(sheep.xPos,sheep.yPos);
+    }
+    else if (sheep.lane === 1)
+    {
+      drawFencesInLane(1);
+      drawFencesInLane(2);
+      drawSheep(sheep.xPos,sheep.yPos);
+      drawFencesInLane(0);
+      
+    }
+    else
+    {
+      drawFencesInLane(0);
+      drawFencesInLane(2);
+      drawSheep(sheep.xPos,sheep.yPos);
+      drawFencesInLane(1);
+      
+      
+    }
 
 }
 
 function onTimer() {
+    
+    
     redrawAll();
+    
     animateSheep(sheep.image);
     time--;
 }
@@ -228,6 +477,8 @@ function run() {
     canvas.setAttribute('tabindex','0');
     canvas.focus();
     intervalId = setInterval(onTimer, timerDelay);
+    
+    
 }
 
 run();
