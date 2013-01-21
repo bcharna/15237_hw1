@@ -1,3 +1,9 @@
+// 15-237 Spring 2013, Hw1
+// akshalab, Ahmed Shalaby 
+// bcharna, Brad Charna
+// sticknor, Sam Ticknor
+
+
 //Initialize objects, events, images
 //
 var canvas = document.getElementById("myCanvas");
@@ -15,10 +21,12 @@ var game = new Object();
 	game.timer = 1000;
 	game.goal = 10;
 	game.fencesJumped = 0;
-	game.timeColor = 'rgb(30, 96, 117)';
+	game.timeColor = 'rgb(157, 188, 196)';
 	game.grassx = 0;
 	game.speed = 1;
 	game.fences = {lane0:[],lane1:[],lane2:[]};
+  game.fenceGenSpeed = 800;
+ // game.splash = true;
 
 
 var sheep = new Object();
@@ -71,6 +79,9 @@ background.src = "background.png"
 
 var grass = new Image();
 grass.src = "grass.png"
+
+//var splashS = new Image();
+//splashS.src = "splash.png"
 
 
 // Resize canvas to browser width (set ratio)
@@ -133,13 +144,15 @@ function moveFencesInLane(laneFences){
       if (!fence.hit && sheep.lane === fence.lane && fenceCenter>sheep.xPos && fenceCenter<(sheep.xPos+sheep.curWidth)){
         fence.sheepGoingThrough = true;
         if (sheepTouchingFence(laneFences[f])){
-      	  game.timer -= 100;
-      	  game.timeColor = 'rgb(206, 10, 49)';
+      	  game.timer -= 50;
+      	  game.timeColor = 'rgb(222, 110, 91)';
       	  sheep.image = 3;
         }
       }
       else if(!fence.hit && fence.sheepGoingThrough === true && fenceCenter<sheep.xPos){
         game.fencesJumped++;
+        game.timeColor = 'rgb(211, 229, 129)';
+        game.timer += 50;
         changeGoal();
         fence.sheepGoingThrough = false;
       }
@@ -245,6 +258,7 @@ function onKeyDown(event){
     var upCode = 38;
     var downCode = 40;
     var pCode = 80;
+    //if (event.keyCode === spaceBarCode){game.splash = false;}
     if (sheep.onGround && window.startGame){
       if (event.keyCode === spaceBarCode){jumpAnim();}
 
@@ -289,7 +303,10 @@ function changeGoal(){
     if (game.goal==0){
         game.goal=10;
         game.level++;
+        if(game.fenceGenSpeed > 300){
+          game.fenceGenSpeed +=  -150;}
         game.speed+=.2;
+        console.log(game.fenceGenSpeed);
     }
 }
 
@@ -312,14 +329,24 @@ function timeLeft(time, color, canvas, ctx){
 	var fontSize = canvas.width*.06;
 	ctx.font = fontSize+"px Impact";
 	ctx.fillStyle = color;
-	ctx.fillText("Time Left: "+calcTime(time), .64*canvas.width, canvas.height/6.4);
+	ctx.fillText("Time Left : "+calcTime(time), .64*canvas.width, canvas.height/6.4);
 }
-
+/*
 function fenceGoal(goal, canvas, ctx){
 	var fontSize = canvas.width*.06;
 	ctx.font = fontSize+"px Impact";
-	ctx.fillStyle = 'rgb(30, 96, 117)';
-	ctx.fillText("Next Level: "+goal, .05*canvas.width, canvas.height/6.4);
+	ctx.fillStyle = 'rgb(157, 188, 196)';
+	ctx.fillText("To Level "+(parseFloat(game.level)+2)+" : "+goal, .05*canvas.width, canvas.height/6.4);
+}
+*/
+function fenceGoal(goal, canvas, ctx){
+  for (var i = 0; i < goal; i++){
+    j = (canvas.width/25)*i;
+    ctx.drawImage(spriteSheet,2562, 155, 255, 208, 
+                               .02*canvas.width+j, canvas.height*.1,
+                                canvas.width*.035,canvas.height*.04);
+    console.log('')
+  }
 }
 
 function drawMoon(canvas, ctx){
@@ -381,7 +408,7 @@ function redrawAll() {
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height)
     fencesJumped(game.fencesJumped, canvas, ctx);
     timeLeft(game.timer, game.timeColor, canvas, ctx);
-    game.timeColor = 'rgb(30, 96, 117)'
+    game.timeColor = 'rgb(157, 188, 196)';
     fenceGoal(game.goal, canvas, ctx);
     drawMoon(canvas, ctx);
     drawGrass();
@@ -415,7 +442,7 @@ function onTimer() {
 }
 
 function fenceFactory(){
-    generateNewFenceId = setInterval(generateNewFence, 800);
+    generateNewFenceId = setInterval(generateNewFence, game.fenceGenSpeed);
     advanceFenceId = setInterval(advanceFences, 10);
 }
 
@@ -450,6 +477,21 @@ function startAnim(){
     run()
   }
 }
+/*
+function splashScreen(x, y, dx, dy){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(splashS,x, y, dx, dy, 0, 0,
+                               canvas.width, canvas.height);
+  if(dy >= 4220){
+    dy = 0;
+  }
+  if (game.splash === true){
+    splashScreen(x, y, dx, dy+844)
+  }
+  else {startAnim();}
+}
+*/
+
 
 function run() {
     canvas.addEventListener('keydown', onKeyDown, false);
@@ -461,5 +503,6 @@ function run() {
     fenceFactory();
 }
 
+//splashScreen(0, 0, 1238, 844);
 startAnim();
 sheepAnimateId = setInterval(animateSheep, game.timerDelay);
