@@ -13,6 +13,7 @@ window.startGame = false;
 window.addEventListener('resize', sizeCanvas);
 var jumpSheepId;
 
+var cloudIntId;
 
 var game = new Object();
 	game.level = 0;
@@ -35,6 +36,121 @@ var sheep = new Object();
 	sheep.onGround = true;
 	sheep.image = 1;
 	sheep.hit = false;
+	
+	
+  // Cloud module
+var CLOUD = (function () {
+	var exports = {};
+
+	exports.clouds = Array();
+
+	function drawCloud(cloud)
+	{
+	  var sx;
+	  var sy;
+	  var sWidth;
+	  var sHeight;
+
+	  if (cloud.image === 0)
+	  {
+	    sx = 80;
+  	  sy = 565;
+  	  sWidth = 243;
+  	  sHeight = 161;
+	  }
+	  else if (cloud.image === 1)
+	  {
+	    sx = 419;
+  	  sy = 544;
+  	  sWidth = 141;
+  	  sHeight = 104;   
+	  }
+	  else if (cloud.image === 2)
+	  {
+	    sx = 751;
+  	  sy = 616;
+  	  sWidth = 95;
+  	  sHeight = 75;   
+	  }
+	  else
+	  {
+	    sx = 938;
+  	  sy = 580;
+  	  sWidth = 244;
+  	  sHeight = 159;   
+	  }
+
+	  var dx = Math.round(canvas.width - cloud.xPos);
+    var dy;
+
+    var dWidth;
+    var dHeight;
+
+    if (cloud.lane === 0)
+    {
+      dy = Math.round(canvas.height * .07);
+      dWidth = Math.round(canvas.width * .18);
+      dHeight = Math.round(canvas.height * .18);
+    }
+    else if (cloud.lane === 1)
+    {
+      dy = Math.round(canvas.height * .2);
+      dWidth = Math.round(canvas.width * .13);
+      dHeight = Math.round(canvas.height * .13);      
+    }
+    
+    if (dWidth > Math.round(sWidth * 2) 
+    || dHeight > Math.round(sHeight * 2)) // we dont want to have the dWidth or height too big 
+    {
+      dWidth = Math.round(sWidth * 2);
+      dHeight = Math.round(sHeight * 2); // prevent too much distortion
+    }
+
+    ctx.drawImage(spriteSheet, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+
+	}
+
+	exports.drawClouds = function () {
+
+	  for (var i = 0; i < exports.clouds.length; i++)
+	  {
+      drawCloud(exports.clouds[i]);
+      var cloudWidth;
+      var thisCloud = exports.clouds[i];
+
+      if (thisCloud.lane === 0)
+      {
+        cloudWidth = Math.round(canvas.width * .18);
+      }
+      else if (thisCloud.lane === 1)
+      {
+        cloudWidth = Math.round(canvas.width * .13);
+      }
+
+      if (canvas.width - thisCloud.xPos < - 1 * cloudWidth) // remove this elt from array as it's off screen
+      { 
+        removeAt(exports.clouds, i);
+        i--; //we must relook at this index as the array got shorter
+      }
+	  }
+
+	}
+
+	exports.newRandomCloud = function () {
+	  var lane = Math.floor((Math.random()*2));
+	  var image_num = Math.floor((Math.random()*4));
+
+	  //create cloud
+	  var cloud = new Object();
+    cloud.xPos = 0;
+    cloud.lane = lane;
+    cloud.image = image_num;
+    return cloud;    
+	};
+
+	return exports;
+}());
+
 
 function generateNewFence(){
   var lane = Math.floor((Math.random()*3));
@@ -196,17 +312,20 @@ function drawSheep(x,y){
   	var width = sheep.curWidth;
   	var height = sheep.curHeight;
 	if (!sheep.onGround){
-		ctx.drawImage(spriteSheet,1594,75,530,348, x, y, width, height);}
+	  if (sheep.image === 3) 
+	    ctx.drawImage(spriteSheet, 1599,462,538,350, x, y, width, height);
+	  else
+		  ctx.drawImage(spriteSheet,1599,79,532,349, x, y, width, height);
+	}
 	//else if (!sheep.onGround && sheepTouchingFence(fence)){
 	//ctx.drawImage(spriteSheet, 1595, 460, 530, 348, x, y, width);}
 	else if (sheep.image === 1){
-		ctx.drawImage(spriteSheet,1011,72,504,350, x, y, width, height);}
+		ctx.drawImage(spriteSheet,1016,75,506,348, x, y, width, height);}
 	else if (sheep.image === 2){
-		ctx.drawImage(spriteSheet,464,70, 490,352, x, y, width, height);}
-    else if (sheep.image === 3){
-    	ctx.drawImage(spriteSheet, 1594,460,530,348, x, y, width, height);}
-  }
-
+		ctx.drawImage(spriteSheet,469,72, 492,352, x, y, width, height);}
+  else if (sheep.image === 3){
+    ctx.drawImage(spriteSheet, 1599,462,538,350, x, y, width, height);}
+}
 
 
 function reDrawSheep(x,y){
@@ -250,7 +369,6 @@ function animateSheep(){
 }
 
 
-
 // User Input
 
 function onKeyDown(event){
@@ -258,7 +376,7 @@ function onKeyDown(event){
     var upCode = 38;
     var downCode = 40;
     var pCode = 80;
-    //if (event.keyCode === spaceBarCode){game.splash = false;}
+    var rCode = 82;
     if (sheep.onGround && window.startGame){
       if (event.keyCode === spaceBarCode){jumpAnim();}
 
@@ -276,9 +394,11 @@ function onKeyDown(event){
       else{ unPauseGame();}
     }
     
+    if(event.keyCode === rCode && game.over === true){
+      location.reload(); // reload the page
+    }
+    
 }
-
-
 
 
 // Rendered Text and non-moving images
@@ -345,14 +465,12 @@ function fenceGoal(goal, canvas, ctx){
     ctx.drawImage(spriteSheet,2562, 155, 255, 208, 
                                .02*canvas.width+j, canvas.height*.1,
                                 canvas.width*.035,canvas.height*.04);
-    console.log('')
   }
 }
 
 function drawMoon(canvas, ctx){
 	ctx.drawImage(spriteSheet,0,0,300,350,canvas.width*.44, canvas.height*.05,
 		                                  canvas.width*.13,canvas.height*.2);
-
 }
 
 function drawGrass(){
@@ -401,11 +519,24 @@ function drawFencesInLane(lane) {
   }
 }
 
+function gameOverMessage() {
+  var fontSize = canvas.width*.06;
+  ctx.textAlign = 'center';
+  game.over = true;
+	ctx.font = fontSize+"px Impact";
+	ctx.fillStyle = 'rgb(244, 223, 108)'
+	ctx.fillText("Game Over", .5 * canvas.width, .45 * canvas.height);
+	fontSize = Math.round(fontSize * .6)
+	ctx.fillText("press r to restart.", .5 * canvas.width, .55 * canvas.height);
+	
+}
+
 // Running the Game
 
 function redrawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height)
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    CLOUD.drawClouds();
     fencesJumped(game.fencesJumped, canvas, ctx);
     timeLeft(game.timer, game.timeColor, canvas, ctx);
     game.timeColor = 'rgb(157, 188, 196)';
@@ -433,6 +564,12 @@ function redrawAll() {
     else{
       drawSheep(sheep.xPos,sheep.yPos);
     }
+    
+    if (game.timer < 0)
+    {
+      pauseGame();
+      gameOverMessage();
+    }
 }
 
 function onTimer() {
@@ -454,14 +591,15 @@ function pauseGame(){
   window.clearInterval(generateNewFenceId);
   window.clearInterval(advanceFenceId);
   window.clearInterval(onTimerId);
+  window.clearInterval(cloudIntId);
 }
 
 function unPauseGame(){
   window.startGame = true;
   jumpSheep(sheep.startYPos,sheep.jumpSpeed,sheep.acceleration);
   onTimerId = setInterval(onTimer, game.timerDelay);
+  cloudIntId = setInterval(advanceClouds, game.timerDelay);
   fenceFactory();
-
 }
 
 function startAnim(){
@@ -474,7 +612,7 @@ function startAnim(){
   else{
     window.startGame = true;
     window.clearInterval(sheepAnimateId);
-    run()
+    run();
   }
 }
 /*
@@ -493,6 +631,29 @@ function splashScreen(x, y, dx, dy){
 */
 
 
+//remove element at index from array in place.
+function removeAt(array, index) {
+  array.splice(index,1);
+}
+
+
+function advanceClouds () {
+    for (var i = 0; i < CLOUD.clouds.length; i++)
+    {
+      CLOUD.clouds[i].xPos += 5; // xPos of 0 is all the way to right
+    }  	  
+}
+
+
+function startClouds() {
+  CLOUD.clouds.push(CLOUD.newRandomCloud()); //initial push
+  setInterval(function () {
+    CLOUD.clouds.push(CLOUD.newRandomCloud());
+  }, 9000);
+  
+  cloudIntId = setInterval(advanceClouds, game.timerDelay);
+  
+}
 function run() {
     canvas.addEventListener('keydown', onKeyDown, false);
     // make canvas focusable, then give it focus!
@@ -501,8 +662,13 @@ function run() {
     onTimerId = setInterval(onTimer, game.timerDelay);  
     sizeCanvas();
     fenceFactory();
+    startClouds();
 }
 
-//splashScreen(0, 0, 1238, 844);
+
 startAnim();
+spriteSheet.onload = function () { // let's start the game once the sprite is loaded
+  startAnim();
+}
+
 sheepAnimateId = setInterval(animateSheep, game.timerDelay);
