@@ -5,13 +5,12 @@ var ctx = canvas.getContext("2d");
 
  // Initialize Variables
 
-var intervalId;
 var timerDelay = 100;
 var fences = 0;
 var time = 1000;
 var goal = 20;
 var sheep = new Object();
-sheep.xPos = 0;
+sheep.xPos = Math.round(ctx.canvas.width*.3);
 sheep.lane = 1;
 sheep.onGround = true;
 sheep.image = 1;
@@ -24,12 +23,16 @@ window.startGame = false;
 // 1. add other clouds into the mix
 // 2. add levels (speed game up)
 // 3. deal with goal thing
-// 4. figure out what is up with timer (using seconds?)
+// 4. //fixed Timer, now in seconds
 // 5. related to 2 - should we really change how fast sheep jumps? It may be tricky
 //     also, it may not be as fun. (we can check this out soon)
 // 6. Deal with game over
 // 7. high scores? (this might actually be not something we want to deal with as
 //   we then need file access which we have not gone over yet...)
+// 8. Sheep hit fence slightly touchy
+// 9. Sheep jumps higher and longer in back lane, 
+//    front line very difficult to jump a fence. 
+// 10. Splash Screen, Game Over Screen, Win Screen 
 
 
 // Fence factory
@@ -169,7 +172,7 @@ function sizeCanvas(){
 function sheepSizePosition(){
   
   if (window.startGame){
-    sheep.xPos = Math.round(ctx.canvas.width*.35);
+    sheep.xPos = Math.round(ctx.canvas.width*.3);
   }
   switch (sheep.lane){
     case 0:
@@ -200,10 +203,13 @@ function drawSheep(x,y){
   var height =	sheep.curHeight;
   if (!sheep.onGround){
   	ctx.drawImage(spriteSheet,1594,75,530,348, x, y, width, height);}
+  //else if (!sheep.onGround && sheepTouchingFence(fence)){
+    //ctx.drawImage(spriteSheet, 1595, 460, 530, 348, x, y, width);}
   else if (sheep.image === 1){
   	ctx.drawImage(spriteSheet,1011,72,504,350, x, y, width, height);}
   else if (sheep.image === 2){
   	ctx.drawImage(spriteSheet,464,70, 490,352, x, y, width, height);}
+
   }
 
 
@@ -220,38 +226,41 @@ function reDrawSheep(x,y){
 
 
 // return true if fence is touching sheep
-function sheepTouchingFence(fence)
-{
-  var fenceX = canvas.width - fence.xPos;
+function sheepTouchingFence(fence){
+  var fenceX = canvas.width - fence.xPos ;
   var fenceY;
-  
   var fenceWidth;
   var fenceHeight;
-  
-  
-  if (fence.lane === 0)
-  {
-    fenceY = Math.round(canvas.height * .80);
-    fenceWidth = Math.round(canvas.width * .18);
-    fenceHeight = Math.round(canvas.height * .18);
+  var fenceCenter - fanceX.Math.round(fenceWidth/2); 
+  if (fence.lane === 0){
+    fenceY = Math.round(canvas.height * .78);
+    fenceWidth = Math.round(canvas.width * .10);
+    fenceHeight = Math.round(canvas.height * .22);
   }
-  else if (fence.lane === 1)
-  {
-    fenceY = Math.round(canvas.height * .725);
-    fenceWidth = Math.round(canvas.width * .13);
-    fenceHeight = Math.round(canvas.height * .13);
-    
-    
+  else if (fence.lane === 1){
+    fenceY = Math.round(canvas.height * .7);
+    fenceWidth = Math.round(canvas.width * .08);
+    fenceHeight = Math.round(canvas.height * .16);
   }
-  else
-  {
-    fenceY = Math.round(canvas.height * .72);
+  else{
+    fenceY = Math.round(canvas.height * .68);
     fenceWidth = Math.round(canvas.width * .06);
-    fenceHeight = Math.round(canvas.height * .06);
+    fenceHeight = Math.round(canvas.height * .10);
   }
+  var fenceCenter = fenceX + Math.round(fenceWidth/2);
+  if (!fence.hit && fence.lane === sheep.lane && fenceCenter>sheep.xPos && fenceCenter<(sheep.xPos+sheep.curWidth)){
+    if (sheep.onGround || ((sheep.yPos+sheep.curHeight)>(fenceY))){
+      fence.hit = true;
+      return true;
+    }
+    else{
+      fences++;
+      redrawAll();
+    }
+  }
+  return false;
   
-  
-  var sheepWidth = sheep.curWidth;
+  /*var sheepWidth = sheep.curWidth;
   var sheepHeight = sheep.curHeight;
   var sheepY = sheep.yPos;
   var sheepX = sheep.xPos;
@@ -285,6 +294,7 @@ function sheepTouchingFence(fence)
   }
   else return false;
   // return  ;
+  */
 }
 
 
@@ -294,7 +304,7 @@ function advanceFences() {
   var xDelta = Math.round(canvas.width/23);
   for (var i = 0; i < laneFences0.length; i++)
   {
-    laneFences0[i].xPos += xDelta;
+    laneFences0[i].xPos += Math.round(xDelta*(10/8));
     if (sheepTouchingFence(laneFences0[i]))
     {
       time -= 100;
@@ -312,7 +322,7 @@ function advanceFences() {
   
   for (var i = 0; i < laneFences1.length; i++)
   {
-    laneFences1[i].xPos += xDelta;
+    laneFences1[i].xPos += Math.round(xDelta*(10/9));
     if (sheepTouchingFence(laneFences1[i]))
     {
       time -= 100;
@@ -354,11 +364,11 @@ function advanceFences() {
 function startAnim(){
   // CLOUD.drawClouds();
   
-  reDrawSheep(1);
+  /*reDrawSheep(1);
   if (sheep.xPos < Math.round(ctx.canvas.width*.35)){
   	setTimeout(startAnim, 10);
   }
-  else{
+  else{*/
     window.startGame = true;
     setInterval(generateFence, 1000);
     setInterval(advanceFences, timerDelay);
@@ -382,7 +392,7 @@ function startAnim(){
     
     
     //abov to redrall
-  }
+ //}
 }
 
 
@@ -414,10 +424,8 @@ function jumpDownAnim(startYPos,delay,jumpDist){
     else if (sheep.lane === 1)
       fencesInLane = laneFences1;
     else
-      fencesInLane = laneFences2;
-    
-    for (var i = 0; i < fencesInLane.length; i++)
-    {
+      fencesInLane = laneFences2;  
+    for (var i = 0; i < fencesInLane.length; i++){
       var fence = fencesInLane[i];
       // console.log(fence.hit);
       
@@ -426,17 +434,9 @@ function jumpDownAnim(startYPos,delay,jumpDist){
         // fencesComing.push(fence);
         
         
-        fences++;
-      }
-        
-    }
-    
-    
-    
-    
-    
-    
-    
+       //fences++;
+      }   
+    }  
   }
 }
 
@@ -495,13 +495,13 @@ function fencesJumped(fences, canvas, ctx){
 	var fontSize = canvas.width*.07
 	ctx.font = fontSize+"px Showcard Gothic";
 	ctx.fillStyle = 'rgb(244, 233, 108)'
-	ctx.fillText(""+fences, canvas.width*.51, canvas.height*.175);
+	ctx.fillText(""+fences, canvas.width*.525, canvas.height*.175);
 }
 
 function calcTime(time){
 	if (time < 0) {return 0;}
 	else {
-		return time;
+		return Math.round(time/10);
 	}
 }
 
@@ -540,27 +540,28 @@ function drawFence(fence) {
   
   if (fence.lane === 0)
   {
-    dy = Math.round(canvas.height * .80);
-    dWidth = canvas.width * .18;
-    dHeight = canvas.height * .18;
+    dy = Math.round(canvas.height * .78);
+    dWidth = canvas.width * .10;
+    dHeight = canvas.height * .22;
   }
   else if (fence.lane === 1)
   {
-    dy = Math.round(canvas.height * .725);
-    dWidth = canvas.width * .13;
-    dHeight = canvas.height * .13;
+    dy = Math.round(canvas.height * .7);
+    dWidth = canvas.width * .08;
+    dHeight = canvas.height * .16;
     
     
   }
   else
   {
-    dy = Math.round(canvas.height * .72);
+    dy = Math.round(canvas.height * .68);
     dWidth = canvas.width * .06;
-    dHeight = canvas.height * .06;
+    dHeight = canvas.height * .10;
     
     
   }
   
+
   
   //TODO: change d width and height to depend on the lane.
   // also change dx and dy to depend on canvas.width and canvas.height
@@ -672,12 +673,9 @@ function redrawAll() {
 }
 
 function onTimer() {
-    
-    
-    redrawAll();
-    
-    animateSheep(sheep.image);
-    time--;
+  redrawAll(); 
+  animateSheep(sheep.image);
+  time--;
 }
 
 
