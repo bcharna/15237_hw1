@@ -7,15 +7,29 @@ var ctx = canvas.getContext("2d");
 
 var intervalId;
 var timerDelay = 100;
-var fences = 99;
-var time = 200;
+var fences = 0;
+var time = 1000;
 var goal = 20;
 var sheep = new Object();
 sheep.xPos = 0;
 sheep.lane = 1;
 sheep.onGround = true;
 sheep.image = 1;
-window.startGame=false;
+window.startGame = false;
+
+
+
+//TODO: (some todos not in a specific order)
+// 0. Add animation to when fence hit (fence goes flat and sheep goes red a sec)
+// 1. add other clouds into the mix
+// 2. add levels (speed game up)
+// 3. deal with goal thing
+// 4. figure out what is up with timer (using seconds?)
+// 5. related to 2 - should we really change how fast sheep jumps? It may be tricky
+//     also, it may not be as fun. (we can check this out soon)
+// 6. Deal with game over
+// 7. high scores? (this might actually be not something we want to deal with as
+//   we then need file access which we have not gone over yet...)
 
 
 // Fence factory
@@ -42,6 +56,85 @@ var fenceFactory = (function () {
 var laneFences0 = Array();
 var laneFences1 = Array();
 var laneFences2 = Array();
+
+
+
+//clouds
+var CLOUD = (function () {
+	var exports = {};
+	
+	exports.clouds = Array();
+	
+	
+	function drawCloud(cloud)
+	{
+	  var sx = 74;
+	  var sy = 562;
+	  var sWidth = 243;
+	  var sHeight = 161;
+	  
+	  
+	  
+	  ///
+	  var dx = Math.round(canvas.width - cloud.xPos);
+    var dy;
+
+    var dWidth;
+    var dHeight;
+
+
+    if (cloud.lane === 0)
+    {
+      dy = Math.round(canvas.height * .10);
+      dWidth = Math.round(canvas.width * .18);
+      dHeight = canvas.height * .18;
+    }
+    else if (cloud.lane === 1)
+    {
+      dy = Math.round(canvas.height * .2);
+      dWidth = Math.round(canvas.width * .13);
+      dHeight = Math.round(canvas.height * .13);
+
+
+    }    
+	  
+	  ///
+	  console.log(sx);
+	  
+	  ctx.drawImage(spriteSheet, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+	  
+	}
+	
+	exports.animate = function () {
+	  
+	  // bumping in draw
+	}
+	
+	exports.drawClouds = function () {
+	  
+	  for (var i = 0; i < exports.clouds.length; i++)
+	  {
+	    
+	    drawCloud(exports.clouds[i]);
+	  }
+	}
+	
+	exports.newRandomCloud = function () {
+	  var lane = Math.floor((Math.random()*2));
+	  
+	  //create fence
+	  var cloud = new Object();
+    cloud.xPos = 0;
+    cloud.lane = lane;
+    
+    
+    return cloud;    
+	};
+	
+	return exports;
+}());
+
+
 
 
 
@@ -74,6 +167,7 @@ function sizeCanvas(){
 }
 
 function sheepSizePosition(){
+  
   if (window.startGame){
     sheep.xPos = Math.round(ctx.canvas.width*.35);
   }
@@ -179,7 +273,7 @@ function sheepTouchingFence(fence)
   // TODO add hit attr to fence. if already hit, return false!!!
   var intersect = ! ( p2.y < p3.y || p1.y > p4.y || p2.x < p3.x || p1.x > p4.x )
   var inLane = (sheep.lane === fence.lane);
-  console.log(intersect && inLane);
+  // console.log(intersect && inLane);
   
   if (intersect && inLane)
   {
@@ -203,7 +297,15 @@ function advanceFences() {
     laneFences0[i].xPos += xDelta;
     if (sheepTouchingFence(laneFences0[i]))
     {
-      time += 1000;
+      time -= 100;
+    }
+    fenceWidth = Math.round(canvas.width * .18) * 5; // multiply by 5 to make sure fence stays in array a little bit
+    //after it leaves screen. So that Fence jump success detection works
+    
+    if (canvas.width - laneFences0[i].xPos < - 1 * fenceWidth) // remove this elt from array as it's off screen
+    {
+      removeAt(laneFences0, i);
+      i--; //we must relook at this index as the array got shorter
     }
     
   }
@@ -213,7 +315,15 @@ function advanceFences() {
     laneFences1[i].xPos += xDelta;
     if (sheepTouchingFence(laneFences1[i]))
     {
-      time += 1000;
+      time -= 100;
+    }
+    
+    fenceWidth = Math.round(canvas.width * .13) * 5;
+    
+    if (canvas.width - laneFences1[i].xPos < - 1 * fenceWidth) // remove this elt from array as it's off screen
+    {
+      removeAt(laneFences1, i);
+      i--; //we must relook at this index as the array got shorter
     }
   }
   
@@ -222,8 +332,17 @@ function advanceFences() {
     laneFences2[i].xPos += xDelta;
     if (sheepTouchingFence(laneFences2[i]))
     {
-      time += 1000;
+      time -= 100;
     }
+    
+    fenceWidth = Math.round(canvas.width * .06) * 5;
+    
+    if (canvas.width - laneFences2[i].xPos < - 1 * fenceWidth) // remove this elt from array as it's off screen
+    {
+      removeAt(laneFences2, i);
+      i--; //we must relook at this index as the array got shorter
+    }
+    
   }
   
   
@@ -233,14 +352,36 @@ function advanceFences() {
 
 
 function startAnim(){
+  // CLOUD.drawClouds();
+  
   reDrawSheep(1);
   if (sheep.xPos < Math.round(ctx.canvas.width*.35)){
   	setTimeout(startAnim, 10);
   }
   else{
     window.startGame = true;
-    setInterval(generateFence, 2000);
+    setInterval(generateFence, 1000);
     setInterval(advanceFences, timerDelay);
+    
+    CLOUD.clouds.push(CLOUD.newRandomCloud()); //initial push
+    setInterval(function () {
+      CLOUD.clouds.push(CLOUD.newRandomCloud());
+    }, 9000);
+    
+    setInterval(function () {
+      
+        for (var i = 0; i < CLOUD.clouds.length; i++)
+        {
+          //move cloud to left
+          
+          CLOUD.clouds[i].xPos += 5;
+        }
+    	  
+    	  
+      }, timerDelay);
+    
+    
+    //abov to redrall
   }
 }
 
@@ -262,6 +403,40 @@ function jumpDownAnim(startYPos,delay,jumpDist){
   else{
     sheep.onGround = true;
     sheep.yPos = startYPos;
+    
+    
+    
+    
+    var fencesInLane;
+    
+    if (sheep.lane === 0)
+      fencesInLane = laneFences0;
+    else if (sheep.lane === 1)
+      fencesInLane = laneFences1;
+    else
+      fencesInLane = laneFences2;
+    
+    for (var i = 0; i < fencesInLane.length; i++)
+    {
+      var fence = fencesInLane[i];
+      // console.log(fence.hit);
+      
+      if (canvas.width - fence.xPos < Math.round(ctx.canvas.width*.35) && fence.hit === false)
+      {
+        // fencesComing.push(fence);
+        
+        
+        fences++;
+      }
+        
+    }
+    
+    
+    
+    
+    
+    
+    
   }
 }
 
@@ -269,7 +444,27 @@ function jumpAnim(){
     var startYPos = sheep.yPos;
     sheep.onGround = false;
     var jumpDist = (2*sheep.curHeight);
+    // jumpStartX = 
+    
+    // start experimental
+
+      
+    // var fencesComing;
+    //  
+    //  for (var i = 0; i < fencesInLane.length; i++)
+    //  {
+    //    var fence = fencesInLane[i];
+    //    if (fence.xPos > Math.round(ctx.canvas.width*.35))
+    //      fencesComing.push(fence);
+    //  }
+    
+    // end experiemental
+    
     jumpUpAnim(startYPos,jumpDist);
+    
+    
+    
+    
 }
 
 function animateSheep(){
@@ -417,38 +612,62 @@ function generateFence() {
     
 }
 
+//remove element at index from array in place.
+function removeAt(array, index) {
+  array.splice(index,1);
+}
+
+
 function redrawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height)
+    
+    CLOUD.drawClouds();
     fencesJumped(fences, canvas, ctx);
     timeLeft(time, canvas, ctx);
     fenceGoal(goal, canvas, ctx);
     drawMoon(canvas, ctx);
     
-    if (sheep.lane === 0)
+    
+    
+    // console.log("lane 0: " + laneFences0.length);
+    // console.log("lane 1: " + laneFences1.length);
+    // console.log("lane 2: " + laneFences2.length);
+    
+    // if (laneFences0.length >= 1)
+    // {
+    //   // console.log("lane 0: " + laneFences0.length);
+    //   
+    // }
+    
+ 
+    if (window.startGame && sheep.lane === 0)
     {
       drawFencesInLane(0);
       drawFencesInLane(1);
       drawFencesInLane(2);
       drawSheep(sheep.xPos,sheep.yPos);
     }
-    else if (sheep.lane === 1)
+    else if (window.startGame && sheep.lane === 1)
     {
       drawFencesInLane(1);
       drawFencesInLane(2);
       drawSheep(sheep.xPos,sheep.yPos);
       drawFencesInLane(0);
+      
+    }
+    else if (window.startGame)
+    {
+      drawFencesInLane(0);
+      drawFencesInLane(2);
+      drawSheep(sheep.xPos,sheep.yPos);
+      drawFencesInLane(1);
+      
       
     }
     else
-    {
-      drawFencesInLane(0);
-      drawFencesInLane(2);
       drawSheep(sheep.xPos,sheep.yPos);
-      drawFencesInLane(1);
       
-      
-    }
 
 }
 
@@ -477,6 +696,10 @@ function run() {
     canvas.setAttribute('tabindex','0');
     canvas.focus();
     intervalId = setInterval(onTimer, timerDelay);
+    
+
+       
+       
     
     
 }
