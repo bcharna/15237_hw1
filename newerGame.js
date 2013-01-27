@@ -299,15 +299,15 @@ function drawSheep(x,y){
   	var width = sheep.curWidth;
   	var height = sheep.curHeight;
 	if (!sheep.onGround){
-		ctx.drawImage(spriteSheet,1594,75,530,348, x, y, width, height);}
+		ctx.drawImage(spriteSheet,1599,79,532,349, x, y, width, height);}
 	//else if (!sheep.onGround && sheepTouchingFence(fence)){
 	//ctx.drawImage(spriteSheet, 1595, 460, 530, 348, x, y, width);}
 	else if (sheep.image === 1){
-		ctx.drawImage(spriteSheet,1011,72,504,350, x, y, width, height);}
+		ctx.drawImage(spriteSheet,1016,75,506,348, x, y, width, height);}
 	else if (sheep.image === 2){
-		ctx.drawImage(spriteSheet,464,70, 490,352, x, y, width, height);}
+		ctx.drawImage(spriteSheet,469,72, 492,352, x, y, width, height);}
     else if (sheep.image === 3){
-    	ctx.drawImage(spriteSheet, 1594,460,530,348, x, y, width, height);}
+    	ctx.drawImage(spriteSheet, 1599,462,538,350, x, y, width, height);}
 }
 
 
