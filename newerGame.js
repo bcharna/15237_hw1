@@ -403,13 +403,9 @@ function onKeyDown(event){
     
     if(event.keyCode === rCode && game.over === true){
       // location.reload(); // reload the page
-      
       reloadGame();
-      
       unPauseGame();
-      
     }
-    
 }
 
 
@@ -639,6 +635,7 @@ function startClouds() {
   cloudIntId = setInterval(advanceClouds, game.timerDelay);
   
 }
+
 function run() {
     canvas.addEventListener('keydown', onKeyDown, false);
     // make canvas focusable, then give it focus!
@@ -650,7 +647,73 @@ function run() {
     startClouds();
 }
 
-spriteSheet.onload = function () { // let's start the game once the sprite is loaded
-  startAnim();
+var splash = new Image();
+splash.src = "splash1.png";
+
+var thisScreen = "splash";
+
+canvas.addEventListener("mousedown", actOnClick, false);
+
+function actOnClick(event) {
+  
+  var pos = getPosition(event)
+  //if user clicks on left half, start game.
+  
+  if (thisScreen === "splash")
+  {
+    if (pos.x < Math.round(canvas.width / 2))
+    {
+      startAnim();
+    }
+    else // show instructions
+    {
+      thisScreen = "instructions";
+      showInstructionsScreen();
+    }
+  }
+  else if (thisScreen === "instructions")
+  {
+    if (pos.y > Math.round(canvas.height * .5))
+    {
+      thisScreen = "game";
+      startAnim();
+    }
+    
+  }
+
+}
+function getPosition(event)
+{
+  var x = event.x;
+  var y = event.y;
+
+  x -= canvas.offsetLeft;
+  y -= canvas.offsetTop;
+  
+  return {x: x, y: y};
+}
+
+function showInstructionsScreen()
+{
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(splash, 0, 0, canvas.width, canvas.height);
+  
+  var fontSize = canvas.width*.07
+	ctx.font = fontSize+"px Impact";
+	ctx.fillStyle = 'green';
+	ctx.textAlign = 'center';
+  
+	ctx.fillText("Instructions here. Click here to play", canvas.width*.5, canvas.height*.75);
+	ctx.textAlign = 'start';
+  
+}
+
+function showSplashScreen() {
+  ctx.drawImage(splash, 0, 0, canvas.width, canvas.height);
+  
+}
+
+splash.onload = function () { // let's start the game once the sprite is loaded
+  showSplashScreen();
 }
 sheepAnimateId = setInterval(animateSheep, game.timerDelay);
