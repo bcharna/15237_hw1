@@ -8,7 +8,7 @@ window.addEventListener('resize', sizeCanvas);
 var jumpSheepId;
 
 var cloudIntId;
-
+var startYPos; // to hold y position of sheep before jumping
 var game = new Object();
 	game.level = 0;
 	game.over = false;
@@ -29,7 +29,26 @@ var sheep = new Object();
 	sheep.image = 1;
 	sheep.hit = false;
 	
+function reloadGame() {
+  game.level = 0;
+	game.over = false;
+	game.timerDelay = 100;
+	game.timer = 1000;
+	game.goal = 10;
+	game.fencesJumped = 0;
+	game.timeColor = 'rgb(30, 96, 117)';
+	game.grassx = 0;
+	game.speed = 1;
+	game.fences = {lane0:[],lane1:[],lane2:[]};
 	
+	sheep.onGround = true;
+	sheep.image = 1;
+	sheep.hit = false;
+	sheep.lane = 1; // put back in center
+  sheepSizePosition();
+	ctx.textAlign = 'start';
+	
+}
   // Cloud module
 var CLOUD = (function () {
 	var exports = {};
@@ -343,7 +362,7 @@ function jumpSheep(startYPos, jumpSpeed, acceleration){
 }
 
 function jumpAnim(){
-	var startYPos = sheep.yPos;
+	startYPos = sheep.yPos;
   sheep.onGround = false;
   var acceleration = -(sheep.curHeight/100);
   var jumpSpeed = Math.round(sheep.curHeight/5);
@@ -383,7 +402,12 @@ function onKeyDown(event){
     }
     
     if(event.keyCode === rCode && game.over === true){
-      location.reload(); // reload the page
+      // location.reload(); // reload the page
+      
+      reloadGame();
+      
+      unPauseGame();
+      
     }
     
 }
