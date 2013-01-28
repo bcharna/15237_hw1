@@ -623,7 +623,7 @@ function run() {
     onTimerId = setInterval(onTimer, game.timerDelay);  
     sizeCanvas();
     fenceFactory();
-    startClouds();
+    // startClouds(); we want no clouds in the splash branch! (test)
 }
 
 spriteSheet.onload = function () { // let's start the game once the sprite is loaded
