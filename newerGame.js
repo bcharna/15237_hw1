@@ -412,7 +412,7 @@ function onKeyDown(event){
         sheepSizePosition();
       }
     }
-    if(event.keyCode === pCode){
+    if(event.keyCode === pCode && game.over === false){
       if (window.startGame) pauseGame();
       else{ unPauseGame();}
     }
