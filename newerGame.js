@@ -495,22 +495,22 @@ function drawGrass(){
 function drawFence(fence) {
   var dx = canvas.width - fence.xPos;
   if (fence.lane === 0){
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.15,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.15,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
-  	else{ctx.drawImage(spriteSheet,2259, 130, 198, 260, dx, fence.yPos,
+  	else{ctx.drawImage(spriteSheet,2265, 133, 199, 260, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
   else if (fence.lane === 1){
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.12,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.12,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
-    else{ctx.drawImage(spriteSheet,2302, 697, 198, 260, dx, fence.yPos,
+    else{ctx.drawImage(spriteSheet,2308, 699, 199, 261, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
   else{
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.1,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.1,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
     else{
-  	ctx.drawImage(spriteSheet,2312, 1008, 198, 260, dx, fence.yPos,
+  	ctx.drawImage(spriteSheet,2318, 1010, 199, 261, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
 }
