@@ -29,6 +29,9 @@ var sheep = new Object();
 	sheep.image = 1;
 	sheep.hit = false;
 	
+var thisScreen = "splash";
+
+	
 function reloadGame() {
   game.level = 0;
 	game.over = false;
@@ -217,9 +220,22 @@ function sizeCanvas(){
 	}
   else {ctx.canvas.width  = 590}
   ctx.canvas.height = Math.round(ctx.canvas.width*.75);
-  sheepSizePosition();	
-  fenceSizePosition();
-  redrawAll();
+  if (thisScreen === "game")
+  {
+    sheepSizePosition();	
+    fenceSizePosition();
+    redrawAll();
+  }
+  else if (thisScreen === "instructions")
+  {
+    showInstructionsScreen();
+  }
+  else if (thisScreen === "splash")
+  {
+    showSplashScreen();
+    
+  }
+  
 }
 
 //////////// fences
@@ -650,8 +666,6 @@ function run() {
 var splash = new Image();
 splash.src = "splash1.png";
 
-var thisScreen = "splash";
-
 canvas.addEventListener("mousedown", actOnClick, false);
 
 function actOnClick(event) {
@@ -663,6 +677,7 @@ function actOnClick(event) {
   {
     if (pos.x < Math.round(canvas.width / 2))
     {
+      thisScreen = "game";
       startAnim();
     }
     else // show instructions
@@ -714,6 +729,7 @@ function showSplashScreen() {
 }
 
 splash.onload = function () { // let's start the game once the sprite is loaded
+  sizeCanvas();
   showSplashScreen();
 }
 sheepAnimateId = setInterval(animateSheep, game.timerDelay);
