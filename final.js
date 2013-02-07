@@ -328,22 +328,22 @@ var moveFencesInLane = function (laneFences){
 function drawFence(fence) {
   var dx = fence.xPos;
   if (fence.lane === 0){ //if hit, draw alternative sprite, else, normal
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.15,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.15,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
-  	else{ctx.drawImage(spriteSheet,2259, 130, 198, 260, dx, fence.yPos,
+  	else{ctx.drawImage(spriteSheet,2265, 133, 199, 260, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
   else if (fence.lane === 1){
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.12,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.12,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
-    else{ctx.drawImage(spriteSheet,2302, 697, 198, 260, dx, fence.yPos,
+    else{ctx.drawImage(spriteSheet,2308, 699, 199, 261, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
   else{
-  	if (fence.hit){ctx.drawImage(spriteSheet,2243, 537, 270, 98, dx, fence.yPos*1.1,
+  	if (fence.hit){ctx.drawImage(spriteSheet,2241, 544, 285, 101, dx, fence.yPos*1.1,
 		                            fence.curWidth*1.4,fence.curHeight*.5);}
     else{
-  	ctx.drawImage(spriteSheet,2312, 1008, 198, 260, dx, fence.yPos,
+  	ctx.drawImage(spriteSheet,2318, 1010, 199, 261, dx, fence.yPos,
 		                            fence.curWidth,fence.curHeight);}
   }
 }
@@ -411,13 +411,13 @@ function drawSheep(x,y){
   	var width = sheep.curWidth;
   	var height = sheep.curHeight;
 	if (!sheep.onGround){
-		ctx.drawImage(spriteSheet,1594,75,530,348, x, y, width, height);}
+		ctx.drawImage(spriteSheet,1599,79,532,349, x, y, width, height);}
 	else if (sheep.image === 1){
-		ctx.drawImage(spriteSheet,1011,72,504,350, x, y, width, height);}
+		ctx.drawImage(spriteSheet,1016,75,506,348, x, y, width, height);}
 	else if (sheep.image === 2){
-		ctx.drawImage(spriteSheet,464,70, 490,352, x, y, width, height);}
+		ctx.drawImage(spriteSheet,469,72, 492,352, x, y, width, height);}
     else if (sheep.image === 3){
-    	ctx.drawImage(spriteSheet, 1594,460,530,348, x, y, width, height);}
+    	ctx.drawImage(spriteSheet, 1599,462,538,350, x, y, width, height);}
   }
 
 
